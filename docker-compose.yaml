@@ -18,12 +18,12 @@ services:
       TF_VAR_db_admin_password: postgres
       TF_VAR_db_keycloak_password: keycloak
     volumes:
-      - state:/state
+      - pstfstate:/state
   keycloak:
     depends_on:
       - "postgres"
     build: keycloak
-    # restart: always
+    restart: always
     command: ["start","--optimized"]
     environment:
       KC_DB_URL_HOST: postgres
@@ -35,25 +35,38 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - '8443:8443'
-  kong:
-    image: kong:2.8.1-alpine
+  keycloak-config: 
     depends_on:
-      - "keycloak"
+      - keycloak
+    build: keycloak-config
     environment:
-      KONG_DATABASE: "off" 
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
-    ports: 
-      - 8000:8000
-      - 9443:8443
-      - 8001:8001
-      - 8444:8444
+      TF_VAR_kc_host: keycloak
+      TF_VAR_kc_port: 8443
+      TF_VAR_kc_admin_username: admin
+      TF_VAR_kc_admin_password: admin
+    volumes:
+      - kctfstate:/state
+  # kong:
+  #   image: kong:2.8.1-alpine
+  #   depends_on:
+  #     - "keycloak"
+  #   environment:
+  #     KONG_DATABASE: "off" 
+  #     KONG_PROXY_ACCESS_LOG: /dev/stdout
+  #     KONG_ADMIN_ACCESS_LOG: /dev/stdout
+  #     KONG_PROXY_ERROR_LOG: /dev/stderr
+  #     KONG_ADMIN_ERROR_LOG: /dev/stderr
+  #     KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+  #   ports: 
+  #     - 8000:8000
+  #     - 9443:8443
+  #     - 8001:8001
+  #     - 8444:8444
 volumes:
   postgres:
     driver: local
-  state:
+  pstfstate:
+    driver: local
+  kctfstate:
     driver: local
   
