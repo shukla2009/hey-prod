@@ -1,0 +1,2 @@
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = $ENV::ALTNAME

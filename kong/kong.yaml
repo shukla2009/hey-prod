@@ -1,0 +1,49 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+- name: hey-prod-service
+  url: https://example.com
+  tags:
+  - hey-prod
+  routes:
+  - name: default-route
+    paths:
+    - /*
+  # plugins:
+  # - name: oidc
+  # - name: key-auth
+
+routes:
+- name: default-route
+  service: hey-prod-service
+  hosts: ["localhost","kong"]
+
+# consumers:
+# - username: hey-prod-user
+#   keyauth_credentials:
+#   - key: hey-prod-user-key
+#   plugins:
+#   - name: rate-limiting
+#     _comment: "these are default rate-limits for user example-user"
+#     config:
+#       policy: local
+#       second: 5
+#       hour: 10
+
+plugins:
+- name: rate-limiting
+  service: hey-prod-service
+  _comment: "example-user is extra limited when using another-service"
+  config:
+    minute: 10
+    limit_by: ip
+- name: oidc
+  service: hey-prod-service
+  config:
+    client_id: hey-prod-client # Realm
+    client_secret: rRPEZFMEdh4jrNZY4rlSRwCMrBPuhwCE  # Client Secret Copied
+    realm: hey-prod
+    discovery: https://keycloak:8443/realms/hey-prod/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
+    scope: openid
+    redirect_after_logout_uri : https://keycloak:8443/realms/hey-prod/protocol/openid-connect/logout

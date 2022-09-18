@@ -13,6 +13,7 @@ resource "keycloak_realm" "hey-prod-realm" {
   attributes      = {
     mycustomAttribute = "myCustomValue"
   }
+  registration_allowed= true
 
   smtp_server {
     host = "smtp.example.com"

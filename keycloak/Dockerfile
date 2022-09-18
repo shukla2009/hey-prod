@@ -11,7 +11,26 @@ RUN /opt/keycloak/bin/kc.sh build
 FROM quay.io/keycloak/keycloak:latest
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 WORKDIR /opt/keycloak
+COPY server.p12 .
+COPY root.crt . 
 # for demonstration purposes only, please make sure to use proper certificates in production instead
-RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1,DNS:keycloak" -keystore conf/server.keystore
+# RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1,DNS:keycloak" -keystore conf/server.keystore
 # change these values to point to a running postgres instance
+RUN keytool -importkeystore \
+    -deststorepass password \
+    -destkeypass password \
+    -destkeystore conf/server.keystore \
+    -srckeystore server.p12 \
+    -srcstoretype PKCS12 \
+    -srcstorepass HeyProd1234 \
+    -alias server
+
+USER root
+RUN keytool -import -alias rootca \
+    -cacerts \
+    -storepass changeit \
+    -file root.crt \
+    -noprompt
+USER keycloak
+
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

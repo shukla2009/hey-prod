@@ -1,0 +1,35 @@
+#! /bin/bash
+PASS='HeyProd1234'
+CA_KEY='ca/hey-prod-ca.key'
+CA_ROOT='ca/hey-prod-root.pem'
+SERVER_KEY='server.key'
+SERVER_CRT='server.crt'
+SERVER_CSR='server.csr'
+SERVER_CSR_CONF='appcsr.conf'
+SERVER_P12='server.p12'
+
+#Generate application csr
+openssl genrsa -des3 -out $SERVER_KEY -passout pass:$PASS 2048
+openssl req -new -key $SERVER_KEY -out $SERVER_CSR -passin pass:$PASS -config $SERVER_CSR_CONF #-extensions v3_req
+
+#Generate application certs
+openssl x509 -req \
+    -in $SERVER_CSR \
+    -CA $CA_ROOT -CAkey $CA_KEY \
+    -CAcreateserial -out $SERVER_CRT \
+    -passin pass:$PASS \
+    -days 365 \
+    -sha256 -extensions req_ext -extfile $SERVER_CSR_CONF
+
+openssl pkcs12 -export -in $SERVER_CRT \
+    -inkey $SERVER_KEY \
+    -out $SERVER_P12 -name server \
+    -passin pass:$PASS \
+    -passout pass:$PASS \
+    -CAfile $CA_ROOT -caname heyprod.com
+
+cp $SERVER_P12 ../keycloak/server.p12
+cp $CA_ROOT ../keycloak/root.crt
+cp $SERVER_CRT ../kong/server.crt
+openssl rsa -in $SERVER_KEY -passin pass:$PASS -out kong.key 
+cp kong.key ../kong/server.key
