@@ -32,5 +32,6 @@ RUN keytool -import -alias rootca \
     -file root.crt \
     -noprompt
 USER keycloak
-
+RUN curl -L https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar \
+  -o /tmp/opentelemetry-javaagent.jar
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

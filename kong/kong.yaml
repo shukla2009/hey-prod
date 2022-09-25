@@ -1,4 +1,4 @@
-_format_version: "2.1"
+_format_version: "3.0"
 _transform: true
 
 services:
@@ -46,4 +46,8 @@ plugins:
     realm: hey-prod
     discovery: https://keycloak:8443/realms/hey-prod/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
     scope: openid
-    redirect_after_logout_uri : https://keycloak:8443/realms/hey-prod/protocol/openid-connect/logout
+    redirect_after_logout_uri: https://kong:9443/login
+    logout_path: "https://keycloak:8443/realms/hey-prod/protocol/openid-connect/logout"
+- name: opentelemetry
+  config: 
+    endpoint: http://otel:4318/v1/traces
