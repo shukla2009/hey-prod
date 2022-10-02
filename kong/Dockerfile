@@ -13,7 +13,7 @@ RUN apk update && apk add git unzip luarocks
 # RUN luarocks install kong-oidc-auth
 # RUN luarocks install kong-plugin-jwt-keycloak
 RUN luarocks install lua-resty-string
-RUN luarocks install lua-resty-openidc 1.6.1-1
+RUN luarocks install lua-resty-openidc
 
 COPY ./kong.yaml /kong.yaml
 COPY ./server.crt /certs/

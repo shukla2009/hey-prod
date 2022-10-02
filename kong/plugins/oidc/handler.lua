@@ -1,10 +1,16 @@
 local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
+local table  = require("table")
+local log = ngx.log
+local DEBUG = ngx.DEBUG
+-- local ERROR = ngx.ERR
+local WARN = ngx.WARN
 
-local OidcHandler = {}
-OidcHandler.PRIORITY = 1000
-OidcHandler.VERSION = "3.0.0"
+local OidcHandler = {
+  PRIORITY = 10,
+  VERSION = "3.0.0",
+}
 
 local function introspect(oidcConfig)
   if utils.has_bearer_access_token() or oidcConfig.bearer_only == "yes" then

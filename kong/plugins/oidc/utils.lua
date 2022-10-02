@@ -49,7 +49,7 @@ function M.get_options(config, ngx)
     introspection_endpoint_auth_method = config.introspection_endpoint_auth_method,
     bearer_only = config.bearer_only,
     realm = config.realm,
-    redirect_uri_path = config.redirect_uri_path or M.get_redirect_uri_path(ngx),
+    redirect_uri = config.redirect_uri or M.get_redirect_uri_path(ngx),
     scope = config.scope,
     response_type = config.response_type,
     ssl_verify = config.ssl_verify,
@@ -58,6 +58,13 @@ function M.get_options(config, ngx)
     filters = parseFilters(config.filters),
     logout_path = config.logout_path,
     redirect_after_logout_uri = config.redirect_after_logout_uri,
+    http_request_decorator = function(req)
+      local h = req.headers or {}
+      h['traceparent'] = ngx.req.get_headers()['traceparent']
+      h['tracestate'] = ngx.req.get_headers()['tracestate']
+      req.headers = h
+      return req
+    end,
   }
 end
 
