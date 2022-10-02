@@ -46,8 +46,6 @@ plugins:
     realm: hey-prod
     discovery: https://keycloak:8443/realms/hey-prod/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
     scope: openid
-    redirect_uri: /home
-    logout_path: "https://keycloak:8443/realms/hey-prod/protocol/openid-connect/logout"
 - name: opentelemetry
   config: 
     endpoint: http://otel:4318/v1/traces

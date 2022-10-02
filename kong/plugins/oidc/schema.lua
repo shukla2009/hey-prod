@@ -24,7 +24,7 @@ return {
           { session_secret = { type = "string", required = false } },
           { recovery_page_path = { type = "string" } },
           { logout_path = { type = "string", required = false, default = '/logout' } },
-          { redirect_after_logout_uri = { type = "string", required = false, default = '/' } },
+          { redirect_after_logout_uri = { type = "string" } },
           { filters = { type = "string" } }
         }
       }
