@@ -129,6 +129,8 @@ services:
     volumes:
       - ./grafana/dashboards:/provisioning/dashboards
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./certs/${SERVER_CRT}:/var/lib/grafana/ssl/${SERVER_CRT}
+      - ./certs/${SERVER_KEY_DEC}:/var/lib/grafana/ssl/${SERVER_KEY_DEC}
     ports:
       - 3000:3000
     environment:
@@ -136,6 +138,9 @@ services:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
       GF_USERS_HOME_PAGE: /d/Xbo7ftQnz/keycloak?orgId=1
+      GF_SERVER_CERT_FILE: /var/lib/grafana/ssl/${SERVER_CRT}
+      GF_SERVER_CERT_KEY: /var/lib/grafana/ssl/${SERVER_KEY_DEC}
+      GF_SERVER_PROTOCOL: https
     depends_on:
       - jaeger
       - prometheus

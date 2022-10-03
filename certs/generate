@@ -71,8 +71,7 @@ cp $SERVER_P12 ../keycloak/$SERVER_P12
 cp $CA_ROOT ../keycloak/$CA_ROOT
 
 cp $SERVER_CRT ../kong/$SERVER_CRT
-openssl rsa -in $SERVER_KEY -passin pass:$SERVER_CRT_KEY_PWD -out ../kong/$SERVER_KEY 
+openssl rsa -in $SERVER_KEY -passin pass:$SERVER_CRT_KEY_PWD -out $SERVER_KEY_DEC 
+cp $SERVER_KEY_DEC ../kong/$SERVER_KEY 
 
-# rm -rf app.* root.* kong.key
-
-
+# rm -rf app.crt app.p12 app.csr
