@@ -8,8 +8,8 @@ resource "keycloak_oidc_identity_provider" "hey_prod_identity_provider" {
   user_info_url      = "https://keycloak:8443/realms/hey-prod/protocol/openid-connect/userinfo"
   jwks_url           = "https://keycloak:8443/realms/hey-prod/protocol/openid-connect/certs"
   hide_on_login_page = true
-  client_secret      = "rRPEZFMEdh4jrNZY4rlSRwCMrBPuhwCE"
-  client_id          = "hey-prod-client"
+  client_secret      = var.kc_client_pwd
+  client_id          = var.kc_client_id
   validate_signature = true
   extra_config = {
     "clientAuthMethod" = "client_secret_post"

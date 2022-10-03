@@ -41,10 +41,10 @@ plugins:
 - name: oidc
   service: hey-prod-service
   config:
-    client_id: hey-prod-client # Realm
-    client_secret: rRPEZFMEdh4jrNZY4rlSRwCMrBPuhwCE  # Client Secret Copied
-    realm: hey-prod
-    discovery: https://keycloak:8443/realms/hey-prod/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
+    client_id: ${KC_CLIENT_ID}
+    client_secret: ${KC_CLIENT_PWD}
+    realm: ${KC_REALM}
+    discovery: https://${KC_HOST}:${KC_PORT}/realms/${KC_REALM}/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
     scope: openid
 - name: opentelemetry
   config: 

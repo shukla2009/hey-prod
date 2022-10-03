@@ -13,3 +13,20 @@ variable "kc_admin_username" {
 variable "kc_admin_password" {
   type = string
 }
+
+variable "kc_client_id" {
+  type = string
+  default = "hey-prod"
+}
+variable "kc_client_pwd" {
+  type = string
+}
+
+variable "kc_client_root_url" {
+  type = string
+}
+
+variable "kc_realm_name" {
+  type = string
+}
+

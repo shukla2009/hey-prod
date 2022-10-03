@@ -5,8 +5,8 @@ services:
     image: postgres:14-alpine
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PWD}
     ports:
       - '5432:5432'
     volumes: 
@@ -17,8 +17,9 @@ services:
       - "postgres"
     build: postgres-config
     environment:
-      TF_VAR_db_admin_password: postgres
-      TF_VAR_db_keycloak_password: keycloak
+      TF_VAR_db_admin_password: ${POSTGRES_ADMIN_PWD}
+      TF_VAR_db_admin_user: ${POSTGRES_ADMIN_USER}
+      TF_VAR_db_keycloak_password: ${POSTGRES_USER_KEYCLOAK_PWD}
     volumes:
       - pstfstate:/state
   otel:
@@ -46,18 +47,22 @@ services:
     depends_on:
       - "postgres"
       - "otel"
-    build: keycloak
+    build: 
+      context: keycloak
+      args:
+        SERVER_P12: ${SERVER_P12}
+        SERVER_P12_PWD: ${SERVER_P12_PWD}
+        CA_ROOT: ${CA_ROOT}
     restart: always
     command: ["start","--optimized"]
     environment:
       KC_DB_URL_HOST: postgres
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
+      KC_DB_PASSWORD: ${POSTGRES_USER_KEYCLOAK_PWD}
       KC_HOSTNAME: keycloak
-      # KC_LOG_LEVEL: INFO
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_NAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PWD}
       JAVA_OPTS_APPEND: "-javaagent:/tmp/opentelemetry-javaagent.jar -Dotel.javaagent.exclude-classes=org.keycloak.services.resources.RealmsResource"
       OTEL_SERVICE_NAME: keycloak
       OTEL_TRACES_EXPORTER: otlp
@@ -68,20 +73,35 @@ services:
     ports:
       - '8443:8443'
   keycloak-config: 
-    container_name: keycloak-CONFIG
+    container_name: keycloak-config
     depends_on:
       - keycloak
     build: keycloak-config
     environment:
       TF_VAR_kc_host: keycloak
       TF_VAR_kc_port: 8443
-      TF_VAR_kc_admin_username: admin
-      TF_VAR_kc_admin_password: admin
+      TF_VAR_kc_admin_username: ${KEYCLOAK_ADMIN_NAME}
+      TF_VAR_kc_admin_password: ${KEYCLOAK_ADMIN_PWD}
+      TF_VAR_kc_realm_name: ${KEYCLOAK_REALM_NAME}
+      TF_VAR_kc_client_id: ${KEYCLOAK_CLIENT_ID}
+      TF_VAR_kc_client_pwd: ${KEYCLOAK_CLIENT_PWD}
+      TF_VAR_kc_client_root_url: https://kong:9443
+
     volumes:
       - kctfstate:/state
   kong:
     container_name: kong 
-    build: kong
+    image: kong:3.0.0-alpine-docker
+    build:
+      context: kong
+      args:
+        SERVER_CRT: ${SERVER_CRT}
+        SERVER_KEY: ${SERVER_KEY}
+        KC_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+        KC_CLIENT_PWD: ${KEYCLOAK_CLIENT_PWD}
+        KC_HOST: keycloak
+        KC_PORT: 8443
+        KC_REALM: ${KEYCLOAK_REALM_NAME}
     depends_on:
       - "keycloak"
       - "otel"
@@ -95,8 +115,8 @@ services:
       KONG_DECLARATIVE_CONFIG: /kong.yaml
       KONG_PLUGINS: rate-limiting,opentelemetry,oidc
       KONG_SSL: "on"
-      KONG_SSL_CERT: /certs/server.crt
-      KONG_SSL_CERT_KEY: /certs/server.key
+      KONG_SSL_CERT: /certs/${SERVER_CRT}
+      KONG_SSL_CERT_KEY: /certs/${SERVER_KEY}
       KONG_LUA_PACKAGE_PATH: /usr/local/kong-oidc/?.lua;
       KONG_LOG_LEVEL: warn
       KONG_OPENTELEMETRY_TRACING: all

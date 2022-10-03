@@ -1,35 +1,78 @@
 #! /bin/bash
-PASS='HeyProd1234'
-CA_KEY='ca/hey-prod-ca.key'
-CA_ROOT='ca/hey-prod-root.pem'
-SERVER_KEY='server.key'
-SERVER_CRT='server.crt'
-SERVER_CSR='server.csr'
-SERVER_CSR_CONF='appcsr.conf'
-SERVER_P12='server.p12'
 
-#Generate application csr
-openssl genrsa -des3 -out $SERVER_KEY -passout pass:$PASS 2048
-openssl req -new -key $SERVER_KEY -out $SERVER_CSR -passin pass:$PASS -config $SERVER_CSR_CONF #-extensions v3_req
+source ../.env
+SERVER_CSR_CONF='appcsr.conf'
+
+#Generate CA key 
+if test -f "$CA_KEY"; then
+    echo "$CA_KEY exists. skipping the generation"
+else 
+    echo "############ Generate CA key ####################"
+    openssl genrsa -des3 -out $CA_KEY -passout pass:$CA_ROOT_PWD 2048
+fi
+
+#Generate ca cert
+if test -f "$CA_ROOT"; then
+    echo "$CA_ROOT exists. skipping the generation"
+else 
+    echo "############ Generate CA Cert ####################"
+    openssl req -x509 -new -nodes -key $CA_KEY -sha256 -days 1825 \
+    -passin pass:$CA_ROOT_PWD \
+    -subj "/C=SN/ST=Singapore/L=Singapore/O=Hey Prod Technologies/OU=ninja/CN=heyprod.com" \
+    -out $CA_ROOT
+fi
+
+
+
+#Generate server key
+if test -f "$SERVER_KEY"; then
+    echo "$SERVER_KEY exists. skipping the generation"
+else 
+    echo "############ Generate Server key ####################"
+    openssl genrsa -des3 -out $SERVER_KEY -passout pass:$SERVER_CRT_KEY_PWD 2048
+fi
+
+#Generate CSR
+if test -f "$SERVER_CSR"; then
+    echo "$SERVER_CSR exists. skipping the generation"
+else 
+    echo "############ Generate Server CSR ####################"
+    openssl req -new -key $SERVER_KEY -out $SERVER_CSR -passin pass:$SERVER_CRT_KEY_PWD -config $SERVER_CSR_CONF 
+fi
 
 #Generate application certs
-openssl x509 -req \
-    -in $SERVER_CSR \
-    -CA $CA_ROOT -CAkey $CA_KEY \
-    -CAcreateserial -out $SERVER_CRT \
-    -passin pass:$PASS \
-    -days 365 \
-    -sha256 -extensions req_ext -extfile $SERVER_CSR_CONF
+if test -f "$SERVER_CRT"; then
+    echo "$SERVER_CRT exists. skipping the generation"
+else 
+    echo "############ Generate Server Certs ####################"
+    openssl x509 -req \
+        -in $SERVER_CSR \
+        -CA $CA_ROOT -CAkey $CA_KEY \
+        -CAcreateserial -out $SERVER_CRT \
+        -passin pass:$CA_ROOT_PWD \
+        -days 365 \
+        -sha256 -extensions req_ext -extfile $SERVER_CSR_CONF
+fi
 
-openssl pkcs12 -export -in $SERVER_CRT \
-    -inkey $SERVER_KEY \
-    -out $SERVER_P12 -name server \
-    -passin pass:$PASS \
-    -passout pass:$PASS \
-    -CAfile $CA_ROOT -caname heyprod.com
+#Generate server p12
+if test -f "$SERVER_P12"; then
+    echo "$SERVER_P12 exists. skipping the generation"
+else 
+    echo "############ Generate Server p12 ####################"
+    openssl pkcs12 -export -in $SERVER_CRT \
+        -inkey $SERVER_KEY \
+        -out $SERVER_P12 -name server \
+        -passin pass:$SERVER_CRT_KEY_PWD \
+        -passout pass:$SERVER_P12_PWD \
+        -CAfile $CA_ROOT -caname heyprod.com
+fi
 
-cp $SERVER_P12 ../keycloak/server.p12
-cp $CA_ROOT ../keycloak/root.crt
-cp $SERVER_CRT ../kong/server.crt
-openssl rsa -in $SERVER_KEY -passin pass:$PASS -out kong.key 
-cp kong.key ../kong/server.key
+cp $SERVER_P12 ../keycloak/$SERVER_P12
+cp $CA_ROOT ../keycloak/$CA_ROOT
+
+cp $SERVER_CRT ../kong/$SERVER_CRT
+openssl rsa -in $SERVER_KEY -passin pass:$SERVER_CRT_KEY_PWD -out ../kong/$SERVER_KEY 
+
+# rm -rf app.* root.* kong.key
+
+
