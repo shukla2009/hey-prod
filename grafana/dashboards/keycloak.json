@@ -218,7 +218,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "base_cpu_processCpuLoad_percent{instance=\"keycloak:8080\"}",
+          "expr": "base_cpu_processCpuLoad_percent{instance=\"keycloak:8443\"}",
           "refId": "A"
         }
       ],
@@ -306,7 +306,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "base_memory_usedHeap_bytes{instance=\"keycloak:8080\"}",
+          "expr": "base_memory_usedHeap_bytes{instance=\"keycloak:8443\"}",
           "refId": "A"
         }
       ],
