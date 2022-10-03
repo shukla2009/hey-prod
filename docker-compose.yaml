@@ -27,7 +27,7 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./otel/config.yaml:/etc/otel-config.yaml
-      - ./otel/root.crt:/etc/root.crt
+      - ./certs/${CA_ROOT}:/etc/root.crt
     command:
       '--config=/etc/otel-config.yaml'
     depends_on:
@@ -67,8 +67,8 @@ services:
       OTEL_SERVICE_NAME: keycloak
       OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
-      QUARKUS_HTTP_ACCESS_LOG_ENABLED: "true"
-      QUARKUS_HTTP_ACCESS_LOG_PATTERN: '%r\n%{ALL_REQUEST_HEADERS}'
+      # QUARKUS_HTTP_ACCESS_LOG_ENABLED: "true" # Only For debugging
+      # QUARKUS_HTTP_ACCESS_LOG_PATTERN: '%r\n%{ALL_REQUEST_HEADERS}' # Only For debugging
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4317
     ports:
       - '8443:8443'
