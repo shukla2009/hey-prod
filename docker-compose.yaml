@@ -11,10 +11,17 @@ services:
       - '5432:5432'
     volumes: 
       - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   postgres-config:
     container_name: postgres-config
     depends_on:
-      - "postgres"
+      postgres:
+        condition: service_healthy
+
     build: postgres-config
     environment:
       TF_VAR_db_admin_password: ${POSTGRES_ADMIN_PWD}
@@ -22,6 +29,7 @@ services:
       TF_VAR_db_keycloak_password: ${POSTGRES_USER_KEYCLOAK_PWD}
     volumes:
       - pstfstate:/state
+    
   otel:
     container_name: otel
     image: otel/opentelemetry-collector-contrib:latest
@@ -45,8 +53,12 @@ services:
   keycloak:
     container_name: keycloak 
     depends_on:
-      - "postgres"
-      - "otel"
+      postgres:
+        condition: service_healthy
+      postgres-config:
+        condition: service_started
+      otel:
+        condition: service_started
     build: 
       context: keycloak
       args:
@@ -72,10 +84,17 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel:4317
     ports:
       - '8443:8443'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k --fail https://localhost:8443/realms/master"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   keycloak-config: 
     container_name: keycloak-config
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_healthy
+
     build: keycloak-config
     environment:
       TF_VAR_kc_host: keycloak
@@ -103,8 +122,10 @@ services:
         KC_PORT: 8443
         KC_REALM: ${KEYCLOAK_REALM_NAME}
     depends_on:
-      - "keycloak"
-      - "otel"
+      keycloak:
+        condition: service_healthy
+      otel:
+        condition: service_started
     environment:
       KONG_DATABASE: "off" 
       KONG_PROXY_ACCESS_LOG: /dev/stdout
@@ -142,8 +163,10 @@ services:
       GF_SERVER_CERT_KEY: /var/lib/grafana/ssl/${SERVER_KEY_DEC}
       GF_SERVER_PROTOCOL: https
     depends_on:
-      - jaeger
-      - prometheus
+      jaeger:
+        condition: service_started
+      prometheus:
+        condition: service_started
 
   prometheus:
     container_name: prometheus
