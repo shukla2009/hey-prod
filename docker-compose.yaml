@@ -142,7 +142,7 @@ services:
       KONG_LOG_LEVEL: warn
       KONG_OPENTELEMETRY_TRACING: all
     ports: 
-      - 9443:8443
+      - 443:8443
       - 8444:8444
   grafana:
     container_name: grafana

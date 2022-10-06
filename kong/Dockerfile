@@ -26,8 +26,8 @@ ENV KC_HOST=${KC_HOST}
 ENV KC_PORT=${KC_PORT}
 ENV KC_REALM=${KC_REALM}
 
-COPY ./kong.yaml.tpl /kong.yaml.tpl
-RUN envsubst < kong.yaml.tpl > kong.yaml
+COPY ./kong.tpl.yaml /kong.tpl.yaml
+RUN envsubst < kong.tpl.yaml > kong.yaml
 COPY ./${SERVER_CRT} /certs/
 COPY ./${SERVER_KEY} /certs/
 RUN mkdir -p /usr/local/kong-oidc/kong
