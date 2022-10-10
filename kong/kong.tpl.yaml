@@ -10,6 +10,14 @@ services:
   - name: default-route
     paths:
     - /*
+- name: jaeger
+  url: http://jaeger:16686
+  tags:
+  - jaeger
+  routes:
+  - name: jaeger
+    paths:
+    - /*
   # plugins:
   # - name: oidc
   # - name: key-auth
@@ -18,6 +26,9 @@ routes:
 - name: default-route
   service: hey-prod-service
   hosts: ["localhost","kong"]
+- name: jaeger
+  service: jaeger
+  hosts: ["jaeger"]
 
 # consumers:
 # - username: hey-prod-user
@@ -43,6 +54,14 @@ plugins:
   config:
     client_id: ${KC_CLIENT_ID}
     client_secret: ${KC_CLIENT_PWD}
+    realm: ${KC_REALM}
+    discovery: https://${KC_HOST}:${KC_PORT}/realms/${KC_REALM}/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
+    scope: openid
+- name: oidc
+  service: jaeger
+  config:
+    client_id: ${KC_JAEGER_CLIENT_ID}
+    client_secret: ${KC_JAEGER_CLIENT_PWD}
     realm: ${KC_REALM}
     discovery: https://${KC_HOST}:${KC_PORT}/realms/${KC_REALM}/.well-known/openid-configuration # OpenID Endpoint Configuration Copied
     scope: openid

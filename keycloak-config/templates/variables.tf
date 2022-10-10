@@ -30,3 +30,14 @@ variable "kc_realm_name" {
   type = string
 }
 
+variable "jaeger_client_id" {
+  type = string
+  default = "jaeger"
+}
+variable "jaeger_client_pwd" {
+  type = string
+}
+
+variable "jaeger_client_root_url" {
+  type = string
+}

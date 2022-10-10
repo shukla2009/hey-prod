@@ -105,6 +105,9 @@ services:
       TF_VAR_kc_client_id: ${KEYCLOAK_CLIENT_ID}
       TF_VAR_kc_client_pwd: ${KEYCLOAK_CLIENT_PWD}
       TF_VAR_kc_client_root_url: https://kong
+      TF_VAR_jaeger_client_id: ${KC_JAEGER_CLIENT_ID}
+      TF_VAR_jaeger_client_pwd: ${KC_JAEGER_CLIENT_PWD}
+      TF_VAR_jaeger_client_root_url: https://jaeger
 
     volumes:
       - kctfstate:/state
@@ -118,6 +121,8 @@ services:
         SERVER_KEY: ${SERVER_KEY}
         KC_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
         KC_CLIENT_PWD: ${KEYCLOAK_CLIENT_PWD}
+        KC_JAEGER_CLIENT_ID: ${KC_JAEGER_CLIENT_ID}
+        KC_JAEGER_CLIENT_PWD: ${KC_JAEGER_CLIENT_PWD}
         KC_HOST: keycloak
         KC_PORT: 8443
         KC_REALM: ${KEYCLOAK_REALM_NAME}
